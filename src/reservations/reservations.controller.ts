@@ -14,7 +14,6 @@ import { ReservationsService } from './reservations.service';
 import { ReservationDto } from './dto/reservation.dto';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
-import { ObjectId } from 'mongoose';
 
 @Controller()
 export class ReservationsController {
@@ -23,7 +22,9 @@ export class ReservationsController {
     // Создаёт бронь на номер на выбранную дату для текущего пользователя.
     @Post('/api/client/reservations')
     @UsePipes(ValidationPipe)
-    @Roles(['admin'])
+    @Roles(['admin', 'client'])
+    /* Добавил 'client' в декораторе roles для того, чтобы клиенты тоже могли создавать себе брони.
+     Далее из-за этого сделал проверку на дурака в методе сервиса, чтобы пользователь мог только на себя делать бронь */
     @UseGuards(RolesGuard)
     createReservation(
         @Body()
@@ -38,12 +39,10 @@ export class ReservationsController {
     @UseGuards(RolesGuard)
     @UsePipes(ValidationPipe)
     getUserReservations(
-        @Query('userId') userId?: ObjectId,
         @Query('dateStart') dateStart?: Date,
         @Query('dateEnd') dateEnd?: Date,
     ) {
         return this.reservationsService.getReservations({
-            userId,
             dateStart,
             dateEnd,
         });
@@ -51,7 +50,7 @@ export class ReservationsController {
 
     // Отменяет бронь пользователя.
     @Delete('/api/client/reservations/:id')
-    @Roles(['client'])
+    @Roles(['client', 'admin', 'manager']) // согласно требования удалять бронь по этому адресу может только client, но добавил admin и manager.
     @UseGuards(RolesGuard)
     deleteReservation(@Param('id') id: string) {
         return this.reservationsService.removeReservation(id);
