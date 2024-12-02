@@ -1,0 +1,29 @@
+# run docker compose
+# docker compose --env-file .env up
+
+services:
+
+  hotel-aggregator:
+    image: moonelpy/ndjs:diplom_hotel_aggregator
+    container_name: hotel-aggregator
+    ports:
+      - 3000:3000
+      - 3001:3001
+    environment:
+      # Установка переменных среды из файла .env
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: hotel-aggregator
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongo:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: hotel-aggregator

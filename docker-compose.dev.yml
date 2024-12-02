@@ -1,0 +1,30 @@
+# command to run
+# docker compose --env-file .env -f docker-compose.dev.yml up
+
+services:
+
+  hotel-aggregator:
+    image: node:20.10
+    container_name: hotel-aggregator
+    working_dir: /hotel-aggregator
+    volumes:
+      - ./:/hotel-aggregator
+    ports:
+      - 3000:3000
+      - 3001:3001
+    command: npm run start:dev
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongo:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: hotel-aggregator
+
+
